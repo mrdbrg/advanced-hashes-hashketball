@@ -125,5 +125,16 @@ def game_hash
     }
   }
 end
+# =============================================
+#               num_points_scored
+# =============================================
 
-# Write code here
+def num_points_scored(players_name)
+  game_hash.each do |location, team_data|
+    team_data[:players].each do |players_data|
+      if players_name === players_data[:player_name]
+        return "#{players_data[:player_name]} scored #{players_data[:points]} points this past season."
+      end
+    end
+  end
+end
