@@ -126,15 +126,147 @@ def game_hash
   }
 end
 # =============================================
+#               find_points method
+# =============================================
+
+def find_points(player_data, players_name)
+    if players_name == player_data[:player_name]
+    return player_data[:points]
+    end
+end
+
+# =============================================
+#               find_shoe_size method
+# =============================================
+
+def find_shoe_size(player_data, players_name)
+    if players_name == player_data[:player_name]
+      return player_data[:shoe]
+    end
+end
+
+# =============================================
+#               find_team_colors method
+# =============================================
+
+def find_team_colors(team_data, find_it)
+  team_data[:team_name] == find_it ? team_data[:colors] : "Ops! I can't find their colors"
+end
+
+# =============================================
+#               find_team_name method
+# =============================================
+
+def find_team_name(team_data, find_it)
+  team_names = []
+  !team_names.include?(team_data[find_it]) ? team_names.push(team_data[find_it]) : "Ops! I can't find their names."
+end
+
+# =============================================
+#             first_tier_team_name method
+# =============================================
+
+def first_tier_team_name(find_it)
+  game_hash.map do |location, team_data|
+    return find_team_name(team_data, find_it)
+  end
+  return team_names
+end
+
+# =============================================
+#             second_tier_colors method
+# =============================================
+
+def second_tier_colors(find_it)
+  game_hash.map do |location, team_data|
+    return find_team_colors(team_data, find_it)
+  end
+end
+
+# =============================================
+#             third_tier_players method
+# =============================================
+
+def third_tier_players(find_it, tier, func)
+  response = nil
+  game_hash.map do |location, team_data|
+    team_data[tier].map do |players_data|
+      response = method(func).call(players_data, find_it) 
+      if response
+        return response
+      end
+    end
+  end
+  return response
+end
+
+# =============================================
+#               tear_down method
+# =============================================
+
+def tear_down(find_it, func)
+  tier = ""
+  method_array = [:find_points, :find_shoe_size]
+
+  if method_array.include?(func)
+
+    tier = :players
+    return third_tier_players(find_it, tier, func)
+
+  elsif func == :find_team_colors
+
+    return second_tier_colors(find_it)
+
+  elsif func == :find_team_name
+    
+    return first_tier_team_name(find_it)
+
+  else
+    return "Sorry! That method does not exist. Please, try again."
+  end
+  
+end
+
+# =============================================
+#               team_names
+# =============================================
+
+def team_names(t_names)
+  t_names = :team_name
+  return tear_down(t_names, :find_team_name)
+end
+
+p team_names("team names")
+# "Brooklyn Nets", "Charlotte Hornets"
+
+# =============================================
 #               num_points_scored
 # =============================================
 
 def num_points_scored(players_name)
-  game_hash.each do |location, team_data|
-    team_data[:players].each do |players_data|
-      if players_name === players_data[:player_name]
-        return "#{players_data[:player_name]} scored #{players_data[:points]} points this past season."
-      end
-    end
-  end
+  return tear_down(players_name, :find_points)
 end
+
+p num_points_scored("Jeff Adrien")
+# # 10
+
+# =============================================
+#               shoe_size
+# =============================================
+
+def shoe_size(players_name)
+  return tear_down(players_name, :find_shoe_size)
+end
+
+# p shoe_size("Jeff Adrien")
+
+# =============================================
+#               team_colors
+# =============================================
+
+def team_colors(team_name)
+  return tear_down(team_name, :find_team_colors)
+end
+
+p team_colors("Brooklyn Nets")
+# "Black", "White"
