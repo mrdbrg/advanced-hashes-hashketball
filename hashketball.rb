@@ -133,8 +133,6 @@ def find_points(player_data, player_name)
   if player_data[:player_name] == player_name
     return player_data[:points]
   end
-  # [The ternary operator seems not to be working with these values in any of the functions.]
-  # player_name == player_data[:player_name] ? player_data[:points] : "NOPE."
 end
 
 # =============================================
@@ -158,18 +156,32 @@ def find_team_colors(find_it, top_level)
 end
 
 # =============================================
-#               find_team_names method
+#          find_player_stats method
 # =============================================
 
-# I commented this code out because I'm still trying to make the test run.
+def find_player_stats(player_data, player_name)
+  if player_data[:player_name] == player_name
+    return player_data
+  end
+end
 
-# def find_team_names(team_data, find_it)
-#   team_names = []
-#   if !team_names.include?(team_data[find_it])
-#     team_names.push(team_data[find_it])
-#   end
-#   return team_names
-# end
+# =============================================
+#               find_big_foot method
+# =============================================
+
+def find_big_foot
+  big_foot = 0
+  rebounds = 0
+  game_hash.each do |location, team_data|
+    team_data[:players].each do |players_data|
+      if big_foot < players_data[:shoe]
+        big_foot = players_data[:shoe]
+        rebounds = players_data[:rebounds]
+      end
+    end
+  end
+  return rebounds
+end
 
 # =============================================
 #             first_tier_team_name method
@@ -194,10 +206,10 @@ def second_tier_colors(find_it, top_level)
 end
 
 # =============================================
-#             third_tier_players method
+#          third_tier_all_players method
 # =============================================
 
-def third_tier_players(find_it, tier, func)
+def third_tier_all_players(find_it, tier, func)
   response = nil
   game_hash.map do |location, team_data|
     team_data[tier].map do |players_data|
@@ -211,17 +223,33 @@ def third_tier_players(find_it, tier, func)
 end
 
 # =============================================
-#               tear_hash_down method
+#        third_tier_by_team_players method
 # =============================================
 
-def tear_hash_down(find_it, func)
+def third_tier_by_team_players(find_it)
+  collect_jersey = []
+  game_hash.map do |location, team_data|
+    if team_data[:team_name] == find_it
+      team_data[:players].each do |player|
+        collect_jersey << player[:number]
+      end
+    end
+  end
+  return collect_jersey
+end
+
+# =============================================
+#               select_func method
+# =============================================
+
+def select_func(find_it = nil, func)
   tier = ""
-  method_array = [:find_points, :find_shoe_size]
+  method_array = [:find_points, :find_shoe_size, :find_player_stats]
 
   if method_array.include?(func)
 
     tier = :players
-    return third_tier_players(find_it, tier, func)
+    return third_tier_all_players(find_it, tier, func)
 
   elsif func == :find_team_colors
 
@@ -231,9 +259,19 @@ def tear_hash_down(find_it, func)
   elsif func == :find_team_names
 
     return first_tier_team_name(find_it)
+  
+  elsif func == "collect_team_jersey"
+    
+    tier = :team_name
+    return third_tier_by_team_players(find_it)
+
+  elsif func == :find_big_foot 
+    
+    return method(func).call
 
   else
-    return "NOT FOUND"
+    
+    return "This method does not exist."
   end
   
 end
@@ -243,7 +281,7 @@ end
 # =============================================
 
 def num_points_scored(players_name)
-  return tear_hash_down(players_name, :find_points)
+  return select_func(players_name, :find_points)
 end
 
 # =============================================
@@ -251,7 +289,7 @@ end
 # =============================================
 
 def shoe_size(players_name)
-  return tear_hash_down(players_name, :find_shoe_size)
+  return select_func(players_name, :find_shoe_size)
 end
 
 # =============================================
@@ -259,14 +297,39 @@ end
 # =============================================
 
 def team_colors(team_name)
-  return tear_hash_down(team_name, :find_team_colors)
+  return select_func(team_name, :find_team_colors)
 end
 
 # =============================================
 #               team_names
 # =============================================
 
-def team_names(t_names)
-  t_names = :team_name
-  return tear_hash_down(t_names, :find_team_names)
+def team_names
+  return select_func(:team_name, :find_team_names)
 end
+
+# =============================================
+#               player_numbers
+# =============================================
+
+def player_numbers(team_name)
+  key_word = "collect_team_jersey"
+  return select_func(team_name, key_word)
+end
+
+# =============================================
+#               player_stats
+# =============================================
+
+def player_stats(player)
+  return select_func(player, :find_player_stats)
+end
+
+# =============================================
+#               big_shoe_rebounds
+# =============================================
+
+def big_shoe_rebounds
+  return select_func(:find_big_foot)
+end
+
